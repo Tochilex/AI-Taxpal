@@ -2,19 +2,17 @@
 
 import ChatWindow from "@/components/ChatWindow";
 import InputBox from "@/components/InputBox";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
+import Quiz from "@/components/Quiz";
 
 const topics = ["VAT", "WHT", "CIT", "E-Invoicing"];
-
 
 type Message = {
   role: "user" | "bot" | "scenario";
   text: string;
 };
-
-
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,49 +24,73 @@ export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [documentTranscript, setDocumentTranscript] = useState("");
 
+  const [isCalling, setIsCalling] = useState(false);
+  const recognizerRef = useRef<SpeechSDK.SpeechRecognizer | null>(null);
+  const synthesizerRef = useRef<SpeechSDK.SpeechSynthesizer | null>(null);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
 
   const handleScenarioVoiceInput = async () => {
-  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
-    process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
-    process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
-  );
-  speechConfig.speechRecognitionLanguage = "en-NG";
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
+    );
+    speechConfig.speechRecognitionLanguage = "en-NG";
 
-  const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-  const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+    const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    const recognizer = new SpeechSDK.SpeechRecognizer(
+      speechConfig,
+      audioConfig
+    );
 
-  recognizer.recognizeOnceAsync(result => {
-    if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-      setScenarioQuestion(result.text);
-    } else {
-      alert("Speech not recognized. Try again.");
+    recognizer.recognizeOnceAsync((result) => {
+      if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+        setScenarioQuestion(result.text);
+      } else {
+        alert("Speech not recognized. Try again.");
+      }
+      recognizer.close();
+    });
+  };
+
+  const handleScenarioSpeakOutput = async () => {
+    const lastBotMessage = messages.filter((msg) => msg.role === "bot").pop();
+
+    if (!lastBotMessage) {
+      alert("No bot message to speak.");
+      return;
     }
-    recognizer.close();
-  });
-};
 
-const handleScenarioSpeakOutput = async () => {
-  console.log("Messages before speaking:", messages);
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
+    );
+    speechConfig.speechSynthesisVoiceName = "en-NG-AbeoNeural";
 
-  const lastBotMessage = messages.filter(msg => msg.role === "bot").pop();
-  
-if (!lastBotMessage) {
-  alert("No bot message to speak.");
-  return;
-}
+    const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+    const synthesizer = new SpeechSDK.SpeechSynthesizer(
+      speechConfig,
+      audioConfig
+    );
 
+    synthesizerRef.current = synthesizer;
 
-  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
-    process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
-    process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
-  );
-  speechConfig.speechSynthesisVoiceName = "en-NG-AbeoNeural";
+    synthesizer.speakTextAsync(
+      lastBotMessage.text,
+      () => {},
+      (err) => {
+        console.error(err);
+      }
+    );
+  };
 
-  const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
-  const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
-
-  synthesizer.speakTextAsync(lastBotMessage.text);
-};
+  // const handleScenarioStopSpeech = () => {
+  //   if (synthesizerRef.current) {
+  //     synthesizerRef.current.close(); // This stops the speech in the browser
+  //     synthesizerRef.current = null;
+  //   }
+  // };
 
   const handleSend = async () => {
     const context = `Topic: ${selectedTopic}`;
@@ -86,10 +108,12 @@ if (!lastBotMessage) {
 
       const data = await response.json();
       console.log("Received:", data);
-      setMessages((prev) => [...prev, { role: "bot", text:data.reply }]);
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "bot", text: "Error fetching response." }]);
-
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Error fetching response." },
+      ]);
     }
   };
 
@@ -120,8 +144,10 @@ if (!lastBotMessage) {
       const data = await response.json();
       setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "bot", text: "Error fetching response." }]);
-
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Error fetching response." },
+      ]);
     }
   };
 
@@ -145,6 +171,165 @@ if (!lastBotMessage) {
     const file = e.target.files?.[0] || null;
     setUploadedFile(file);
   };
+
+  const startVoiceCall = () => {
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
+    );
+    speechConfig.speechRecognitionLanguage = "en-NG";
+
+    const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    const recognizer = new SpeechSDK.SpeechRecognizer(
+      speechConfig,
+      audioConfig
+    );
+
+    recognizerRef.current = recognizer;
+    setIsCalling(true);
+
+    // Bot greets first
+    const greeting = "Hello, how can I help you?";
+    setMessages((prev) => [...prev, { role: "bot", text: greeting }]);
+    speakResponse(greeting);
+
+    recognizer.recognizing = (_, event) => {
+      console.log("Recognizing:", event.result.text);
+    };
+
+    recognizer.recognized = async (_, event) => {
+      const userText = event.result.text.trim();
+
+      // Ignore empty, whitespace, or non-informative speech
+      if (!userText || !/[a-zA-Z0-9]/.test(userText)) return;
+
+      setMessages((prev) => [...prev, { role: "user", text: userText }]);
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userText,
+          context: `Topic: ${selectedTopic}`,
+          history: messages.slice(-5)  // send last 5 messages for context
+        }),
+      });
+
+      const data = await response.json();
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+      speakResponse(data.reply);
+    };
+
+    recognizer.startContinuousRecognitionAsync();
+  };
+
+  // const speakResponse = (text: string) => {
+  //   if (synthesizerRef.current) {
+  //     synthesizerRef.current.close(); // This stops playback
+  //     synthesizerRef.current = null;
+  //   }
+
+  //   const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+  //     process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
+  //     process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
+  //   );
+  //   speechConfig.speechSynthesisVoiceName = "en-NG-AbeoNeural";
+
+  //   const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+  //   const synthesizer = new SpeechSDK.SpeechSynthesizer(
+  //     speechConfig,
+  //     audioConfig
+  //   );
+
+  //   synthesizerRef.current = synthesizer;
+
+  //   synthesizer.speakTextAsync(
+  //     text,
+  //     () => {},
+  //     (err) => console.error("Speech synthesis error:", err)
+  //   );
+  // };
+
+  const speakResponse = async (text: string) => {
+    // Stop previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
+      process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
+    );
+    speechConfig.speechSynthesisVoiceName = "en-NG-AbeoNeural";
+
+    const stream = SpeechSDK.AudioOutputStream.createPullStream();
+    const audioConfig = SpeechSDK.AudioConfig.fromStreamOutput(stream);
+    const synthesizer = new SpeechSDK.SpeechSynthesizer(
+      speechConfig,
+      audioConfig
+    );
+
+    synthesizer.speakTextAsync(
+      text,
+      (result) => {
+        const audioData = result.audioData;
+        const blob = new Blob([audioData], { type: "audio/wav" });
+        const url = URL.createObjectURL(blob);
+        audioUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.play();
+      },
+      (error) => {
+        console.error("Speech synthesis error:", error);
+      }
+    );
+  };
+
+  const endVoiceCall = () => {
+    if (recognizerRef.current) {
+      recognizerRef.current.stopContinuousRecognitionAsync(() => {
+        recognizerRef.current?.close();
+        recognizerRef.current = null;
+      });
+    }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+
+    setIsCalling(false);
+  };
+
+  // const endVoiceCall = () => {
+  //   if (recognizerRef.current) {
+  //     recognizerRef.current.stopContinuousRecognitionAsync(() => {
+  //       recognizerRef.current?.close();
+  //       recognizerRef.current = null;
+  //     });
+  //   }
+
+  //   if (synthesizerRef.current) {
+  //     synthesizerRef.current.close();
+  //     synthesizerRef.current = null;
+  //   }
+
+  //   setIsCalling(false);
+  // };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -205,6 +390,13 @@ if (!lastBotMessage) {
               >
                 🔊 Listen
               </button>
+
+              {/* <button
+                onClick={handleScenarioStopSpeech}
+                className="bg-red-500 text-white px-4 py-1 rounded"
+              >
+                ⏹️ Stop
+              </button> */}
             </div>
             <button
               onClick={handleScenarioSubmit}
@@ -213,6 +405,27 @@ if (!lastBotMessage) {
               Submit Scenario
             </button>
           </div>
+
+          <div className="mt-6">
+            <h2 className="font-semibold mb-2">🎧 Voice Call with Tax Tutor</h2>
+            {!isCalling ? (
+              <button
+                onClick={startVoiceCall}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Start Call
+              </button>
+            ) : (
+              <button
+                onClick={endVoiceCall}
+                className="bg-red-600 text-white px-4 py-2 rounded"
+              >
+                End Call
+              </button>
+            )}
+          </div>
+
+          <Quiz />
         </div>
 
         <div className="mt-6">
