@@ -151,22 +151,74 @@ export default function Home() {
     }
   };
 
-  const handleDocumentAnalysis = () => {
-    if (!uploadedFile) {
-      alert("Please upload a document first.");
-      return;
-    }
+  
+const handleDocumentAnalysis = async () => {
+  if (!uploadedFile) {
+    alert("Please upload a document first.");
+    return;
+  }
 
-    // Simulate analysis
-    const simulatedText = `Simulated analysis of "${uploadedFile.name}"...`;
-    setDocumentTranscript(simulatedText);
-    // setMessages([
-    //   ...messages,
-    //   `Document Uploaded: ${uploadedFile.name}`,
-    //   `Bot: ${simulatedText}`,
-    // ]);
-  };
+  const formData = new FormData();
+  formData.append("file", uploadedFile);
+  formData.append("topic", selectedTopic);
 
+  const response = await fetch("/api/analyser", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await response.json();
+  setDocumentTranscript(data.transcript || "No insights found.");
+};
+
+
+//   const handleDocumentAnalysis = () => {
+//     if (!uploadedFile) {
+//       alert("Please upload a document first.");
+//       return;
+//     }
+//     const reader = new FileReader();
+
+    
+// reader.onload = async (e) => {
+//     const text = e.target?.result as string;
+
+    
+// // Send to Azure OpenAI or your backend for analysis
+//     const response = await fetch("/api/analyser", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+      
+// body: JSON.stringify({
+//     text: extractedText, // from FileReader or parser
+//     topic: selectedTopic // optional, helps guide the analysis
+//   }),
+
+//     });
+
+    
+// const data = await response.json();
+//     setDocumentTranscript(data.transcript || "No insights found.");
+//   };
+
+  
+// reader.readAsText(uploadedFile); // works for .txt; use other libs for .pdf/.docx
+// };
+
+  // // Simulate analysis
+  //   const simulatedText = `Simulated analysis of "${uploadedFile.name}"...`;
+  //   setDocumentTranscript(simulatedText);
+  //   // setMessages([
+  //   //   ...messages,
+  //   //   `Document Uploaded: ${uploadedFile.name}`,
+  //   //   `Bot: ${simulatedText}`,
+  //   // ]);
+  // };
+
+
+
+
+  
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setUploadedFile(file);
@@ -179,6 +231,9 @@ export default function Home() {
     );
     speechConfig.speechRecognitionLanguage = "en-NG";
 
+    // Extend silence timeout to give users more time
+    speechConfig.setProperty("SPEECH-EndpointSilenceTimeoutMs", "2000"); // 2 seconds
+
     const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
     const recognizer = new SpeechSDK.SpeechRecognizer(
       speechConfig,
@@ -189,7 +244,7 @@ export default function Home() {
     setIsCalling(true);
 
     // Bot greets first
-    const greeting = "Hello, how can I help you?";
+    const greeting = "Hello, I am your tax assistance, please how can I help you?";
     setMessages((prev) => [...prev, { role: "bot", text: greeting }]);
     speakResponse(greeting);
 
