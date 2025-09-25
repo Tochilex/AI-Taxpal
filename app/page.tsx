@@ -508,7 +508,7 @@ export default function Home() {
                 type="file"
                 accept=".pdf,.doc,.docx,.txt"
                 onChange={handleFileUpload}
-                className="mb-2 text-text border border-text rounded-2xl"
+                className="mb-2 text-text border border-text rounded-2xl p-2"
               />
 
               {/* Analyze Button */}
