@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 const Quiz = () => {
-   const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState("");
   const [questionData, setQuestionData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ const Quiz = () => {
       const response = await fetch("/api/quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic })
       });
       const data = await response.json();
       setQuestionData(data);
@@ -38,7 +38,11 @@ const Quiz = () => {
     if (isCorrect) {
       setScore(score + 1);
     }
-    setFeedback(isCorrect ? "✅ Correct! " + questionData.explanation : "❌ Incorrect. " + questionData.explanation);
+    setFeedback(
+      isCorrect
+        ? "✅ Correct! " + questionData.explanation
+        : "❌ Incorrect. " + questionData.explanation
+    );
   };
 
   const nextQuestion = () => {
@@ -60,14 +64,16 @@ const Quiz = () => {
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow-md mt-6">
-      <h2 className="text-lg font-bold mb-2">Tax Quiz Mode</h2>
+    <div className="bg-[#282828]  p-4 rounded-2xl">
+      <h2 className="text-lg text-text font-bold mb-2">Tax Quiz Mode</h2>
       <select
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        className="border px-2 py-1 rounded mb-4"
+        className="border text-text px-2 py-1 rounded mb-4"
       >
-        <option value="" disabled>Choose topic</option>
+        <option value="" disabled>
+          Choose topic
+        </option>
         <option value="VAT">VAT</option>
         <option value="WHT">WHT</option>
         <option value="CIT">CIT</option>
@@ -79,7 +85,9 @@ const Quiz = () => {
         <p className="text-red-600">{error}</p>
       ) : showResult ? (
         <div>
-          <p className="text-green-700 font-semibold">You scored {score} out of 5</p>
+          <p className="text-green-700 font-semibold">
+            You scored {score} out of 5
+          </p>
           <button
             onClick={restartQuiz}
             className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
@@ -117,7 +125,6 @@ const Quiz = () => {
       ) : null}
     </div>
   );
+};
 
-}
-
-export default Quiz
+export default Quiz;

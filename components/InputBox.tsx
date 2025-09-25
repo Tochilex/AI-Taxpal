@@ -19,7 +19,7 @@ const InputBox: React.FC<InputBoxProps> = ({input, onInputChange, onSend, onVoic
 
   return (
     <div>
-      <div className="flex space-x-2 mb-2">
+      <div className="flex justify-end space-x-2 mb-2">
         <button
           onClick={onVoice}
           className="bg-green-500 text-white px-4 py-1 rounded"
@@ -39,7 +39,7 @@ const InputBox: React.FC<InputBoxProps> = ({input, onInputChange, onSend, onVoic
           value={input}
           onChange={onInputChange}
           onKeyDown={handleKeyDown}
-          className="flex-grow border px-2 py-1 rounded"
+          className="flex-grow border px-2 py-1 rounded text-text"
           placeholder="Type your question..."
         />
         <button
