@@ -64,8 +64,8 @@ const Quiz = () => {
   };
 
   return (
-    <div className="bg-[#282828]  p-4 rounded-2xl">
-      <h2 className="text-lg text-text font-bold mb-2">Tax Quiz Mode</h2>
+    <div className="rounded-2xl">
+      <h2 className=" text-text font-bold mb-2">Tax Quiz Mode</h2>
       <select
         value={topic}
         onChange={(e) => setTopic(e.target.value)}

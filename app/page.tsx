@@ -378,23 +378,23 @@ export default function Home() {
   // };
 
   return (
-    <div className="bg-background">
+    <div className="bg-background relative">
       <Container>
         <nav className="py-3 ">
-          <h1 className="text-text text-lg font-semibold text-center">
+          <h1 className="text-text text-lg font-medium text-center">
             Tax Tutor Chatbot
           </h1>
         </nav>
 
         <div className="shadow-md rounded-2xl p-4">
-          <h1 className="text-base mx-auto w-[700px] text-center font-bold mb-4 text-text">
+          <h1 className="text-base mx-auto w-[700px] text-center font-medium mb-4 text-text">
             TTC-bot is an AI-powered virtual tax assistant. Select a topic, ask
             questions, upload documents, take quizzes, or have a voice call to
             get tax help!
           </h1>
 
           {/* Topic Selector */}
-          <div className="mb-4 flex mx-auto w-[700px]">
+          {/* <div className="mb-4 flex mx-auto w-[700px]">
             <select
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value)}
@@ -409,12 +409,12 @@ export default function Home() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-2 gap-6">
             {/* Chat Window */}
-            <div className="mb-4 bg-[#282828] p-4 rounded-2xl shadow">
-              <div>
+            <div className="mb-4 bg-[#282828] p-4 rounded-2xl ">
+              {/* <div>
                 <InputBox
                   input={input}
                   onInputChange={(e) => setInput(e.target.value)}
@@ -422,107 +422,111 @@ export default function Home() {
                   onVoice={handleVoiceInput}
                   onSpeak={handleSpeakOutput}
                 />
-              </div>
+              </div> */}
 
-              <div className="mt-4 h-auto overflow-y-auto">
+              <div className="mt-4 h-[700px] overflow-y-auto">
                 <ChatWindow messages={messages} />
               </div>
             </div>
 
             {/* Tax Scenario Q&A */}
-            <div className="mb-4 bg-[#282828] p-4 rounded-2xl shadow">
-              <label className="block font-semibold mb-2 text-text">
-                Ask a Tax Scenario Question:
-              </label>
-              <textarea
-                value={scenarioQuestion}
-                onChange={(e) => setScenarioQuestion(e.target.value)}
-                className="w-full placeholder:text-gray-400 placeholder:italic text-text border rounded-2xl px-2 py-1 mb-2"
-                rows={3}
-                placeholder="Describe your case study or scenario..."
-              ></textarea>
+            <div className="mb-4 bg-[#282828] px-4 py-10 rounded-2xl space-y-10">
+              <div>
+                <label className="block font-semibold mb-2 text-text">
+                  Ask a Tax Scenario Question:
+                </label>
+                <textarea
+                  value={scenarioQuestion}
+                  onChange={(e) => setScenarioQuestion(e.target.value)}
+                  className="w-full placeholder:text-gray-400 placeholder:italic text-text border rounded-2xl px-2 py-1 mb-2"
+                  rows={3}
+                  placeholder="Describe your case study or scenario..."
+                ></textarea>
 
-              <div className="">
-                <div className="flex space-x-2 mb-2">
-                  <button
-                    onClick={handleScenarioVoiceInput}
-                    className="bg-green-500 text-white px-4 py-1 rounded-2xl"
-                  >
-                    🎤 Voice
-                  </button>
-                  <button
-                    onClick={handleScenarioSpeakOutput}
-                    className="bg-purple-500 text-white px-4 py-1 rounded-2xl"
-                  >
-                    🔊 Listen
-                  </button>
+                <div className="">
+                  <div className="flex space-x-2 mb-2">
+                    <button
+                      onClick={handleScenarioVoiceInput}
+                      className="cursor-pointer text-sm hover:opacity-90 bg-green-500 text-white px-4 py-1 rounded-2xl"
+                    >
+                      🎤 Voice
+                    </button>
+                    <button
+                      onClick={handleScenarioSpeakOutput}
+                      className="cursor-pointer text-sm hover:opacity-90 bg-purple-500 text-white px-4 py-1 rounded-2xl"
+                    >
+                      🔊 Listen
+                    </button>
 
-                  <button
-                    onClick={handleScenarioSubmit}
-                    className="bg-indigo-500 text-white px-4 py-1 rounded-2xl"
-                  >
-                    Submit Scenario
-                  </button>
+                    <button
+                      onClick={handleScenarioSubmit}
+                      className="cursor-pointer text-sm hover:opacity-90 bg-indigo-500 text-white px-4 py-1 rounded-2xl"
+                    >
+                      Submit Scenario
+                    </button>
 
-                  {/* <button
+                    {/* <button
                 onClick={handleScenarioStopSpeech}
                 className="bg-red-500 text-white px-4 py-1 rounded-2xl"
               >
                 ⏹️ Stop
               </button> */}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-[#282828] p-4 rounded-2xl shadow">
-              <h2 className="font-semibold mb-2 text-text">
-                🎧 Voice Call with Tax Tutor
-              </h2>
-              {!isCalling ? (
+              <div className="rounded-2xl">
+                <h2 className="font-semibold mb-2 text-text">
+                  🎧 Voice Call with Tax Tutor
+                </h2>
+                {!isCalling ? (
+                  <button
+                    onClick={startVoiceCall}
+                    className="cursor-pointer hover:opacity-90 text-sm bg-green-600 text-white px-4 py-2 rounded-2xl"
+                  >
+                    Start Call
+                  </button>
+                ) : (
+                  <button
+                    onClick={endVoiceCall}
+                    className="bg-red-600 text-white px-4 py-2 rounded-2xl"
+                  >
+                    End Call
+                  </button>
+                )}
+              </div>
+
+              {/* <div>
+                <Quiz />
+              </div> */}
+
+              {/* Document Analyzer */}
+              <div>
+                <label className="block font-semibold mb-2 text-text">
+                  Document Analyzer:
+                </label>
+
+                {/* File Upload */}
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={handleFileUpload}
+                  className="block cursor-pointer mb-2 text-text border border-text rounded-2xl p-2"
+                />
+
+                {/* Analyze Button */}
                 <button
-                  onClick={startVoiceCall}
-                  className="bg-green-600 text-white px-4 py-2 rounded-2xl"
+                  onClick={handleDocumentAnalysis}
+                  className="bg-gray-700 cursor-pointer hover:opacity-90 text-sm text-white px-4 py-1 rounded-2xl"
                 >
-                  Start Call
+                  Analyze Document
                 </button>
-              ) : (
-                <button
-                  onClick={endVoiceCall}
-                  className="bg-red-600 text-white px-4 py-2 rounded-2xl"
-                >
-                  End Call
-                </button>
-              )}
-            </div>
-            <div>
-              <Quiz />
-            </div>
-            {/* Document Analyzer */}
-            <div className="col-span-2 bg-[#282828] p-4 rounded-2xl shadow">
-              <label className="block font-semibold mb-2 text-text">
-                Document Analyzer:
-              </label>
 
-              {/* File Upload */}
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={handleFileUpload}
-                className="mb-2 text-text border border-text rounded-2xl p-2"
-              />
-
-              {/* Analyze Button */}
-              <button
-                onClick={handleDocumentAnalysis}
-                className="bg-gray-700 text-white px-4 py-1 rounded-2xl"
-              >
-                Analyze Document
-              </button>
-
-              {/* Transcript Display */}
-              <div className="mt-4 bg-[#353839] text-text p-2 rounded-2xl border">
-                <strong>Transcript:</strong>
-                <p>{documentTranscript || "No document analyzed yet."}</p>
+                {/* Transcript Display */}
+                <div className="mt-4 bg-[#353839] text-text p-2 rounded-2xl border">
+                  <strong>Transcript:</strong>
+                  <p>{documentTranscript || "No document analyzed yet."}</p>
+                </div>
               </div>
             </div>
           </div>
