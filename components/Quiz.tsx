@@ -69,7 +69,7 @@ const Quiz = () => {
       <select
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        className="border text-text px-2 py-1 rounded mb-4"
+        className="border bg-[#334] px-2 py-1 rounded mb-4"
       >
         <option value="" disabled>
           Choose topic
@@ -103,7 +103,7 @@ const Quiz = () => {
               <button
                 key={opt}
                 onClick={() => handleAnswer(opt)}
-                className="block w-full text-left px-4 py-2 bg-gray-100 rounded hover:bg-blue-100"
+                className="block w-full text-left px-4 py-2 bg-[#334] cursor-pointer rounded hover:opacity-90"
                 disabled={!!feedback}
               >
                 {opt}
@@ -115,7 +115,7 @@ const Quiz = () => {
               <p className="font-semibold">{feedback}</p>
               <button
                 onClick={nextQuestion}
-                className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
+                className="mt-2 px-4 py-2 cursor-pointer bg-green-600 text-white rounded"
               >
                 Next Question
               </button>

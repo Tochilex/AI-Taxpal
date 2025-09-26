@@ -17,7 +17,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   return (
-    <div className="min-h-[400px] overflow-y-scroll border p-2 mb-4 text-text rounded">
+    <div className="min-h-auto p-2 mb-4 text-text rounded">
+      {
+        messages.length === 0 && (
+          <p className="text-center text-gray-500 mt-4">No messages yet.</p>
+        )
+      }
       {messages.map((msg, idx) => (
         <div key={idx} className="mb-1">
           <span className="font-semibold capitalize">{msg.role}:</span>{" "}

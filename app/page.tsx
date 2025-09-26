@@ -424,7 +424,7 @@ export default function Home() {
                 />
               </div> */}
 
-              <div className="mt-4 h-[700px] overflow-y-auto">
+              <div className="mt-4 h-[400px] overflow-y-auto">
                 <ChatWindow messages={messages} />
               </div>
             </div>
@@ -460,9 +460,9 @@ export default function Home() {
 
                     <button
                       onClick={handleScenarioSubmit}
-                      className="cursor-pointer text-sm hover:opacity-90 bg-indigo-500 text-white px-4 py-1 rounded-2xl"
+                      className="cursor-pointer text-sm hover:opacity-90 border border-text text-white px-4 py-1 rounded-2xl"
                     >
-                      Submit Scenario
+                      Submit
                     </button>
 
                     {/* <button
@@ -489,7 +489,7 @@ export default function Home() {
                 ) : (
                   <button
                     onClick={endVoiceCall}
-                    className="bg-red-600 text-white px-4 py-2 rounded-2xl"
+                    className="bg-red-600 text-white cursor-pointer px-4 py-2 rounded-2xl"
                   >
                     End Call
                   </button>
