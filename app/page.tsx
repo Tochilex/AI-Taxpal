@@ -378,7 +378,7 @@ export default function Home() {
   // };
 
   return (
-    <div className="bg-background relative">
+    <div className=" relative">
       <Container>
         <nav className="py-3 ">
           <h1 className="text-text text-lg font-medium text-center">
