@@ -7,7 +7,7 @@ import Container from "@/components/Container";
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 import Quiz from "@/components/Quiz";
 
-const topics = ["VAT", "WHT", "CIT", "E-Invoicing"];
+const topics = ["VAT", "WHT", "CIT", "E-Invoicing", "General Tax"];
 
 type Message = {
   role: "user" | "bot" | "scenario";
@@ -18,7 +18,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
-  const [selectedTopic, setSelectedTopic] = useState<string>("VAT");
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [scenarioQuestion, setScenarioQuestion] = useState("");
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -103,7 +103,7 @@ export default function Home() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage, context })
+        body: JSON.stringify({ message: userMessage, context }),
       });
 
       const data = await response.json();
@@ -112,7 +112,7 @@ export default function Home() {
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Error fetching response." }
+        { role: "bot", text: "Error fetching response." },
       ]);
     }
   };
@@ -137,8 +137,8 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scenario: scenarioQuestion,
-          topic: selectedTopic
-        })
+          topic: selectedTopic,
+        }),
       });
 
       const data = await response.json();
@@ -146,7 +146,7 @@ export default function Home() {
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Error fetching response." }
+        { role: "bot", text: "Error fetching response." },
       ]);
     }
   };
@@ -161,13 +161,28 @@ export default function Home() {
     formData.append("file", uploadedFile);
     formData.append("topic", selectedTopic);
 
-    const response = await fetch("/api/analyser", {
-      method: "POST",
-      body: formData
-    });
+    try {
+      const response = await fetch("/api/analyser", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
-    setDocumentTranscript(data.transcript || "No insights found.");
+      
+const text = await response.text(); // Read raw response
+console.log("Raw response:", text); // See if it's HTML
+
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setDocumentTranscript(data.transcript || "No insights found.");
+      } else {
+        setDocumentTranscript(data.error || "Failed to analyze document.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setDocumentTranscript("An error occurred while analyzing the document.");
+    }
   };
 
   //   const handleDocumentAnalysis = () => {
@@ -257,8 +272,8 @@ export default function Home() {
         body: JSON.stringify({
           message: userText,
           context: `Topic: ${selectedTopic}`,
-          history: messages.slice(-5) // send last 5 messages for context
-        })
+          history: messages.slice(-5), // send last 5 messages for context
+        }),
       });
 
       const data = await response.json();
@@ -312,7 +327,7 @@ export default function Home() {
       process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY!,
       process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION!
     );
-    speechConfig.speechSynthesisVoiceName = "en-NG-AbeoNeural";
+    speechConfig.speechSynthesisVoiceName = "en-US-AriaNeural";
 
     const stream = SpeechSDK.AudioOutputStream.createPullStream();
     const audioConfig = SpeechSDK.AudioConfig.fromStreamOutput(stream);
@@ -381,16 +396,16 @@ export default function Home() {
     <div className="bg-background">
       <Container>
         <nav className="py-3 ">
-          <h1 className="text-text text-lg font-semibold text-center">
-            Tax Tutor Chatbot
+          <h1 className="text-gray-300 text-lg font-semibold text-center">
+            AI Tax Assistant
           </h1>
         </nav>
 
         <div className="shadow-md rounded-2xl p-4">
-          <h1 className="text-base mx-auto w-[700px] text-center font-bold mb-4 text-text">
-            TTC-bot is an AI-powered virtual tax assistant. Select a topic, ask
-            questions, upload documents, take quizzes, or have a voice call to
-            get tax help!
+          <h1 className="text-base text-gray-400 mx-auto w-[700px] text-center font-bold mb-4">
+            This is an AI-powered virtual tax assistant. Select a topic, ask
+            questions, upload documents, take quizzes, or initiate a voice call
+            for professional tax support.
           </h1>
 
           {/* Topic Selector */}
@@ -398,9 +413,9 @@ export default function Home() {
             <select
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value)}
-              className="border px-2 py-1 text-white rounded-md w-full"
+              className="border px-2 py-1 bg-[#282828] text-white rounded-md w-full"
             >
-              <option value="" disabled>
+              <option value="" disabled className="">
                 -- Select a Topic --
               </option>
               {topics.map((topic) => (
@@ -414,7 +429,10 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-6">
             {/* Chat Window */}
             <div className="mb-4 bg-[#282828] p-4 rounded-2xl shadow">
-              <div>
+              <div className="mt-4 h-auto overflow-y-auto">
+                <ChatWindow messages={messages} />
+              </div>
+              {/* <div>
                 <InputBox
                   input={input}
                   onInputChange={(e) => setInput(e.target.value)}
@@ -422,17 +440,13 @@ export default function Home() {
                   onVoice={handleVoiceInput}
                   onSpeak={handleSpeakOutput}
                 />
-              </div>
-
-              <div className="mt-4 h-auto overflow-y-auto">
-                <ChatWindow messages={messages} />
-              </div>
+              </div> */}
             </div>
 
             {/* Tax Scenario Q&A */}
             <div className="mb-4 bg-[#282828] p-4 rounded-2xl shadow">
-              <label className="block font-semibold mb-2 text-text">
-                Ask a Tax Scenario Question:
+              <label className="block font-semibold mb-2 text-gray-300">
+                Ask a tax question or describe a scenario:
               </label>
               <textarea
                 value={scenarioQuestion}
@@ -459,7 +473,7 @@ export default function Home() {
 
                   <button
                     onClick={handleScenarioSubmit}
-                    className="bg-indigo-500 text-white px-4 py-1 rounded-2xl"
+                    className="border border-gray-300 text-gray-300 cursor-pointer px-4 py-1 rounded-2xl"
                   >
                     Submit Scenario
                   </button>
@@ -472,10 +486,8 @@ export default function Home() {
               </button> */}
                 </div>
               </div>
-            </div>
 
-            <div className="bg-[#282828] p-4 rounded-2xl shadow">
-              <h2 className="font-semibold mb-2 text-text">
+              <h2 className="font-semibold mt-9 text-gray-300">
                 🎧 Voice Call with Tax Tutor
               </h2>
               {!isCalling ? (
@@ -494,7 +506,28 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <div>
+
+            {/* <div className="bg-[#282828] p-4 rounded-2xl shadow">
+              <h2 className="font-semibold mb-2 text-text">
+                🎧 Voice Call with Tax Tutor
+              </h2>
+              {!isCalling ? (
+                <button
+                  onClick={startVoiceCall}
+                  className="bg-green-600 text-white px-4 py-2 rounded-2xl"
+                >
+                  Start Call
+                </button>
+              ) : (
+                <button
+                  onClick={endVoiceCall}
+                  className="bg-red-600 text-white px-4 py-2 rounded-2xl"
+                >
+                  End Call
+                </button>
+              )}
+            </div> */}
+            <div className="col-start-2">
               <Quiz />
             </div>
             {/* Document Analyzer */}

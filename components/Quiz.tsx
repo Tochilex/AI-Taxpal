@@ -69,9 +69,9 @@ const Quiz = () => {
       <select
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        className="border text-text px-2 py-1 rounded mb-4"
+        className="border bg-[#282828] text-white px-2 py-1 rounded mb-4"
       >
-        <option value="" disabled>
+        <option value="" disabled className="text-gray-400">
           Choose topic
         </option>
         <option value="VAT">VAT</option>
@@ -80,7 +80,7 @@ const Quiz = () => {
       </select>
 
       {loading ? (
-        <p>Loading question...</p>
+        <p className="text-white">Loading question...</p>
       ) : error ? (
         <p className="text-red-600">{error}</p>
       ) : showResult ? (
@@ -97,7 +97,7 @@ const Quiz = () => {
         </div>
       ) : questionData ? (
         <div>
-          <p className="font-semibold mb-2">{questionData.question}</p>
+          <p className="font-semibold text-gray-300 mb-2">{questionData.question}</p>
           <div className="space-y-2">
             {questionData?.options?.map((opt: string) => (
               <button
